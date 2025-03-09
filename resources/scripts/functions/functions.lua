@@ -276,13 +276,6 @@ function OmoriMod.DoHappyTear(tear)
 	end
 end
 
-
----@param entity Entity
----@return boolean
-function OmoriMod:IsShinyKnife(entity)
-	return entity.Type == EntityType.ENTITY_EFFECT and entity.Variant == OmoriMod.Enums.EffectVariant.EFFECT_SHINY_KNIFE
-end
-
 local KnifeSprites = {
 	[knifeType.SHINY_KNIFE] = "ShinyKnife",
 	[knifeType.VIOLIN_BOW] = "ViolinBow",
@@ -348,11 +341,6 @@ end
 function OmoriMod.GiveKnife(player, Type)
 	local playerData = OmoriMod.GetData(player)
 
-	-- Pendiente
-	-- Completado
-
-	---@class OmoriModKnife
-	---@field Type string
 	if not playerData.KnifeData then
 		playerData.KnifeData = {}
 	end		
@@ -378,6 +366,8 @@ function OmoriMod.GiveKnife(player, Type)
 	}
 
 	if not knife then return end
+
+	knife:AddEntityFlags(EntityFlag.FLAG_PERSISTENT)
 
 	KnifeData = OmoriMod.GetData(knife)
 	KnifeData.KnifeType = Type
@@ -522,6 +512,7 @@ function OmoriMod:ChangeEmotionEffect(player, playSound)
 	local EmotionSuffix = emotionTable.suffix
 	local EmotionSound = emotionTable.sound	
 	local EmotionCostume = player:GetCostumeSpriteDescs()[3]
+
 	if EmotionCostume then  
 		local EmotionCostumeSprite = EmotionCostume:GetSprite()
 		EmotionCostumeSprite:ReplaceSpritesheet(0, spriteRoot .. charFolderTarget .. EmotionSuffix .. ".png", true)
@@ -657,6 +648,8 @@ function OmoriMod.SetEmotion(player, emotion)
 
 	OmoriMod.ReplaceGlowSprite(player, playerData.EmotionGlow)
 
+	Isaac.RunCallback(OmoriModCallbacks.EMOTION_CHANGE_TRIGGER, player, emotion)
+
 	if player.FrameCount == 0 then return end
 	player:SetColor(EmotionColor[emotion], 8, -1, true, true)
 end
@@ -700,7 +693,7 @@ end
 local ResetColor = Color(1, 1, 1, 1, 0.6, 0.6, 0.6)
 ---@param player EntityPlayer
 ---@param healAmount integer
----@param focus boolean
+---@param focus? boolean
 function OmoriMod:ResetSunnyEmotion(player, healAmount, focus)
 	if not OmoriMod.IsOmori(player, true) then return end
 	local playerData = OmoriMod.GetData(player)
@@ -794,7 +787,6 @@ function OmoriMod.EmotionUpdateItem(player, emotionTable, DefaultEmotion ,Tier2E
     if not emotion then OmoriMod.SetEmotion(player, "Neutral") end
 
     local newEmotion = OmoriMod.When(emotion, emotionTable, DefaultEmotion)
-
     local maxEmotion = OmoriMod.IsOmori(player, false) and Tier3Emotion or Tier2Emotion
     if emotion == maxEmotion then return end
 

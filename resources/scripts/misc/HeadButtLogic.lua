@@ -27,8 +27,6 @@ function mod:AubreyInputs(player)
         end       
     end
     
-    print(playerData.HeadButt)
-
     if not playerData.HeadButt then return end
 
     local capsule = Capsule(player.Position, Vector.One, 0, 20)
@@ -43,11 +41,9 @@ function mod:AubreyInputs(player)
         if not playerData.HeadButt then return end
 
         playerData.HeadButtDamage = 0
-
         Isaac.RunCallback(OmoriCallbacks.HEADBUTT_ENEMY_HIT, player, ent)
-
+        
         ent:TakeDamage(playerData.HeadButtDamage, 0, EntityRef(player), 0)
-        -- 
         sfx:Play(sounds.SOUND_HEADBUTT_HIT)
         
         local nearbyEnemies = Isaac.FindInRadius(player.Position, HeadButtAOE, EntityPartition.ENEMY)

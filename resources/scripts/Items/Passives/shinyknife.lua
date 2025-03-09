@@ -12,14 +12,16 @@ local funcs = {
 	switch = mod.When,
 	runcallback = Isaac.RunCallback,
 	push = mod.TriggerPush,
+	getemotion = mod.GetEmotion,
+	isomori = mod.IsOmori,
 }
 
 ---@param player EntityPlayer
 ---@return number
 local function getWeaponDMG(player)
     local playerData = OmoriMod.GetData(player)
-	local emotion = OmoriMod.GetEmotion(player)
-    local DamageMult = (OmoriMod.IsOmori(player, true) and 2) or (OmoriMod.IsOmori(player, false) and 2.5) or 3
+	local emotion = funcs.getemotion(player)
+    local DamageMult = (funcs.isomori(player, true) and 2) or (funcs.isomori(player, false) and 2.5) or 3
 	
 	local MrPlantEgg = OmoriMod.GetKnife(player, "MrPlantEgg")
 
@@ -39,12 +41,12 @@ local function getWeaponDMG(player)
 		["StressedOut"] = 2
 	}
 	
-	local AngerMult = OmoriMod.When(emotion, angerValues, 1) 
+	local AngerMult = funcs.switch(emotion, angerValues, 1) 
 
-    if OmoriMod.IsOmori(player, true) then
+    if funcs.isomori(player, true) then
 		local isFocus = playerData.IncreasedBowDamage
 		local FocusBonus = isFocus == true and 1 or 0
-		local SunnyMult = SunnyEmotionsMult[emotion]
+		local SunnyMult = funcs.switch(emotion, SunnyEmotionsMult, 0)
 
 		DamageMult = DamageMult + SunnyMult + FocusBonus
     end
@@ -81,17 +83,17 @@ HudHelper.RegisterHUDElement({
 	end
 }, HudHelper.HUDType.EXTRA)
 
-function mod:OnKnifeRemoving()
-	local players = PlayerManager.GetPlayers()
-	for _, player in ipairs(players) do
-		local playerData = OmoriMod.GetData(player)
-		if not OmoriMod:IsPlayerShooting(player, false) then
-			playerData.shinyKnifeCharge = 0
-		end
-		OmoriMod.RemoveKnife(player, "ShinyKnife")
-	end
-end
-mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.OnKnifeRemoving)
+-- function mod:OnKnifeRemoving()
+-- 	local players = PlayerManager.GetPlayers()
+-- 	for _, player in ipairs(players) do
+-- 		local playerData = OmoriMod.GetData(player)
+-- 		if not OmoriMod:IsPlayerShooting(player, false) then
+-- 			playerData.shinyKnifeCharge = 0
+-- 		end
+-- 		OmoriMod.RemoveKnife(player, "ShinyKnife")
+-- 	end
+-- end
+-- mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.OnKnifeRemoving)
 
 ---comment
 ---@param player EntityPlayer
@@ -102,7 +104,7 @@ function mod:KnifeSmoothRotation(player)
 
 	for k, v in pairs(playerData.KnifeData) do
 		local knife = v
-		local knifesprite = knife:GetSprite() ---@type Sprite
+		local knifesprite = knife:GetSprite()
 		local knifeData = OmoriMod.GetData(knife)
 		local isShooting = OmoriMod:IsPlayerShooting(player, false)
 		local aimDegrees = player:GetAimDirection():GetAngleDegrees()
@@ -163,7 +165,6 @@ function mod:ShinyKnifeUpdate(knife)
 		if player:HasCollectible(CollectibleType.COLLECTIBLE_SOY_MILK) and isIdle then
 			knifeData.HitBlacklist = {}
 			OmoriMod:InitKnifeSwing(knife)	
-			
 		end
 
 		if isIdle then
@@ -171,9 +172,7 @@ function mod:ShinyKnifeUpdate(knife)
 			
 			local newCharge = funcs.runcallback(OmoriModCallbacks.PRE_KNIFE_CHARGE, knife, KnifeType) ---@type number
 
-			if newCharge then
-				knifeChargeFormula = newCharge
-			end
+			knifeChargeFormula = newCharge or knifeChargeFormula
 
 			playerData.shinyKnifeCharge = math.min(playerData.shinyKnifeCharge + knifeChargeFormula, 100)
 			
@@ -232,6 +231,8 @@ function mod:ShinyKnifeUpdate(knife)
 	end	
 
 	local swingSpeed = knifeData.SwordSwing and 2.5 or ((numTears > 1 and 1.5) or 1)
+
+	print(swingSpeed)
 
 	knifesprite.PlaybackSpeed = swingSpeed
 

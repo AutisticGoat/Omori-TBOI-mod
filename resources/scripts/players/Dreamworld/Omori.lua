@@ -1,19 +1,21 @@
 local mod = OmoriMod
-
 local enums = mod.Enums
 local costumes = enums.NullItemID
 local players = enums.PlayerType
 local knifeType = enums.KnifeType
 
+local funcs = {
+	IsOmori = mod.IsOmori,
+}
+
 ---@param player EntityPlayer
 function mod:OmoriInit(player)
-	if OmoriMod.IsOmori(player, false) then
-		player:AddNullCostume(costumes.ID_OMORI)
-		player:AddNullCostume(costumes.ID_EMOTION)
-		OmoriMod.SetEmotion(player, "Neutral")
-	
-		OmoriMod.AddEmotionGlow(player)
-	end
+	if not funcs.IsOmori(player, false) then return end
+	player:AddNullCostume(costumes.ID_OMORI)
+	player:AddNullCostume(costumes.ID_EMOTION)
+	OmoriMod.SetEmotion(player, "Neutral")
+	OmoriMod.AddEmotionGlow(player)
+	OmoriMod.GiveKnife(player, knifeType.SHINY_KNIFE)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.OmoriInit)
 
@@ -24,6 +26,12 @@ local modCharacters = {
 	[players.PLAYER_OMORI_B] = costumes.ID_SUNNY,
 }
 
+local overrideCostumes = {
+	[625] = true,
+	[58] = true,
+	[costumes.ID_EMOTION] = true,
+}
+
 ---@param itemconfig ItemConfigItem
 ---@param player EntityPlayer
 ---@return boolean?
@@ -31,6 +39,8 @@ function mod:PreAddOmoriCostume(itemconfig, player)
 	local rawCostume = modCharacters[player:GetPlayerType()]
 
 	if not rawCostume then return end
+
+	table.insert(overrideCostumes, rawCostume)
 
 	local costumeID = itemconfig.Costume.ID
 
@@ -54,21 +64,12 @@ local overrideWeapons = {
 	[WeaponType.WEAPON_SPIRIT_SWORD] = true,
 }
 
-function mod:OmoriUpdate(player)
-	if not OmoriMod.IsOmori(player, false) then return end
-
-	OmoriMod.GiveKnife(player, knifeType.SHINY_KNIFE)
-end
-mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.OmoriUpdate)
-
---- comment
 --- @param player EntityPlayer
 function mod:OmoUpdate(player)
 	if not OmoriMod:IsKnifeUser(player) then return end		
 	local weapon = player:GetWeapon(1)
 	
 	if weapon == nil then return end
-
 	local override = OmoriMod.When(weapon:GetWeaponType(), overrideWeapons, false) 
 
 	if override == true then
@@ -87,7 +88,7 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.OmoUpdate)
 ---@param player EntityPlayer
 ---@param flags CacheFlag
 function mod:OmoriStats(player, flags)
-	if not OmoriMod.IsOmori(player, false) then return end
+	if not funcs.IsOmori(player, false) then return end
 
 	player:AddNullCostume(costumes.ID_OMORI)
 	player:AddNullCostume(costumes.ID_EMOTION)

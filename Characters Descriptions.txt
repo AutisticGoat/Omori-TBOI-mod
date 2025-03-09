@@ -51,7 +51,7 @@
 				- Restores Sunny's Emotion to Neutral
 				- Heals a full red heart
 				- Raises bow's damage multiplier to x5 (only works once after Overcome use)		
---- AUBREY (DW) --- (WORK IN PROGRESS, EXPECT HER IN v2.0.0)	
+--- AUBREY (DW) --- 
 	Stats: 	
 		Speed: 0.80
 		Tears: 2.05 (x0.8)
@@ -62,14 +62,14 @@
 
 	Description: Aubrey is meant to be a Tank, so she has high damage, low tears and speed, and 4 hearts, like Omori, she can inherit different emotions, but her mechanics will go arround Anger and some of her signature skills in OMORI:
 		- Headbutt: if Aubrey is moving, pressing one of the buttons that cycles Omori's emotion, will trigger her Headbutt	
-			- Aubrey will charge in the direction she was walkin
+			- Aubrey will charge in the direction she was walking
 			- Hitting an enemy will damage it
-			- Damage formula is (Aubrey's Damage * 2) * Aubrey's Speed stat (Min 1, )
+			- Damage formula is (Aubrey's Damage * 2) * Aubrey's Speed stat (Min 1
 			- If enemy survives, Aubrey will receive damage
 			- If Aubrey Fails the Headbutt and collides with a wall or grid entity, she'll get Angry but won't receive any damage (Enraged if she was already Angry)
 		- Counter:
 			- If Aubrey receives contact damage from an enemy, she'll counter with Mr Eggplant:
-				- Mr Eggplant damage formula is Aubrey's Damage * 3
+				- Mr Eggplant damage formula is Aubrey's Damage * 4
 				- Mr Eggplant will push enemies if they survive
 				- Receiving Damage has a chance to enrage Aubrey
 				- When killing an enemy with Mr Eggplant, Aubrey Has a chance to heal herself (1/2 heart), the angrier, the more chance of healing
@@ -79,7 +79,7 @@
 			- Anger will increase damage of her Headbutt (Angry: x1.25, Enraged: x1.5)
 		- Birthright (Mash)
 			- Killing an enemy with Headbutt will always heal 1/2 heart
-			- Increased heal chance from killing with MrEggplant (chance x1.5)
+			- Increased heal chance from killing with MrEggplant (chance x1.2)
 --- AUBREY (Faraway) ---
 	Stats: 	
 		Speed: 1

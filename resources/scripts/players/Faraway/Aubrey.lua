@@ -8,7 +8,6 @@ local game = utils.Game
 local sfx = utils.SFX
 local sounds = enums.SoundEffect
 local misc = enums.Misc
-local rng = utils.RNG
 local knifeType = enums.KnifeType
 
 ---comment
@@ -26,6 +25,9 @@ function mod:InitFarawayAubrey(player)
     playerData.HeadButt = false
 
     OmoriMod.SetEmotion(player, "Neutral")
+    OmoriMod.AddEmotionGlow(player)
+
+    mod.GiveKnife(player, knifeType.NAIL_BAT)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.InitFarawayAubrey)
 
@@ -83,15 +85,9 @@ function mod:FarawayAubreyEffectUpdate(player)
     if (room:IsClear() or room:HasCurseMist() or thereAreEnemies() == false) then
         playerData.EmotionCounter = OmoriMod:SecsToFrames(emotionCounterMax)
         playerData.HeadButtCooldown = OmoriMod:SecsToFrames(4)
-
-        -- print("apsdjpasjdopasd")
         return 
     end
-
     
-    print(playerData.EmotionCounter)
-    print(playerData.HeadButtCooldown)
-
     if emotion == "Angry" or emotion == "Enraged" then
         playerData.HeadButtCooldown = math.max(playerData.HeadButtCooldown - 1, 0)
 
@@ -129,89 +125,16 @@ function mod:FarawayAubreyEffectUpdate(player)
             end
         end
     end
-
-    print(playerData.HeadButt)
-
-    player.Size = (playerData.HeadButt == true and thereAreEnemies()) and 20 or 10
 end
 mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.FarawayAubreyEffectUpdate)
 
-local HBParams = tables.AubreyHeadButtParams
-
--- -comment
--- -@param player EntityPlayer
--- -@param collider Entity
--- function mod:OnFarawayAubreyCollide(player, collider)
---     local playerData = OmoriMod.GetData(player)
-
---     if not OmoriMod.IsAubrey(player, true) then return end
-
---     if playerData.HeadButt == false then return end
-    
---     local isEnemy = collider:IsActiveEnemy() and collider:IsVulnerableEnemy()
-
---     if not isEnemy then return end
-
---     local emotion = OmoriMod.GetEmotion(player)
-
---     local minDamage = 10    
---     local damageMult = player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 4 or 3
-
---     local rawFormula = (player.Damage * damageMult) * math.max(player.MoveSpeed, 1) * HBParams[emotion].DamageMult
-
---     local DamageFormula = math.max(rawFormula, minDamage)
-
---     sfx:Play(sounds.SOUND_HEADBUTT_HIT)
-
---     for _, entity in ipairs(Isaac.FindInRadius(player.Position, 60, EntityPartition.ENEMY)) do
---         entity:TakeDamage(DamageFormula, 0, EntityRef(player), 0)
---         OmoriMod.TriggerPush(collider, player, 20, 5, true)
---     end
-
---     if collider.HitPoints <= DamageFormula then
---         player:AddHearts(1)
---     end
-
---     player:SetMinDamageCooldown(40)
-
---     mod:TriggerHBParams(player)
-
---     OmoriMod.SetEmotion(player, "Neutral")
---     playerData.EmotionCounter = OmoriMod:SecsToFrames(6)
--- end
--- mod:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, mod.OnFarawayAubreyCollide)
-
 ---comment
----@param bat EntityEffect
----@param entity Entity
----@return number?
-function mod:NailbatHit(bat, entity)
-    local player = bat.SpawnerEntity:ToPlayer()
-    if not player then return end
-    if not OmoriMod.IsAubrey(player, true) then return end
-
-    sfx:Play(sounds.SOUND_AUBREY_HIT, 1, 2, false, 1, 0)
-
-    local homeRunChance = OmoriMod.randomNumber(1, 100, rng)
-    local maxChance = entity:IsBoss() == true and 2 or 10
-
-    if homeRunChance <= maxChance then
-        return math.huge
-    end
-    
-    OmoriMod.TriggerPush(entity, player, 20, 5, false)
+---@param player EntityPlayer
+---@param ent EntityNPC
+function mod:FarawayAubreyHeadbuttHit(player, ent)
+    mod.SetEmotion(player, "Neutral")
 end
-mod:AddCallback(callbacks.KNIFE_HIT_ENEMY, mod.NailbatHit)
-
-function mod:BatSwingTrigger(bat)
-    local player = bat.SpawnerEntity:ToPlayer()
-
-    if not player then return end
-    if not OmoriMod.IsAubrey(player, true) then return end
-
-    sfx:Play(sounds.SOUND_AUBREY_SWING, 0.7, 2, false, 1.5, 0)
-end
-mod:AddCallback(callbacks.KNIFE_SWING_TRIGGER, mod.BatSwingTrigger)
+mod:AddCallback(callbacks.HEADBUTT_ENEMY_HIT, mod.FarawayAubreyHeadbuttHit)
 
 function mod:NullFarawayHeadbuttDamage(entity, _, flags, source)
     local player = entity:ToPlayer()    

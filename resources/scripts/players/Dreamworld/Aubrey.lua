@@ -11,7 +11,6 @@ local HBParams = tables.AubreyHeadButtParams
 local OmoriCallbacks = enums.Callbacks
 local misc = enums.Misc
 
-local HeadButtAOE = 40
 local NeutralColor = Color(1, 1, 1, 1, 0.2, 0.2, 0.2)
 
 ---comment
@@ -29,6 +28,7 @@ function mod:InitAubrey(player)
     playerData.EmotionCounter = 0
 
     OmoriMod.SetEmotion(player, "Neutral")
+    OmoriMod.AddEmotionGlow(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.InitAubrey)
 
@@ -44,18 +44,6 @@ function mod:AubreyStats(player, flags)
     end
 end
 mod:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, mod.AubreyStats)
-
----comment
----@param player EntityPlayer
----@param Damage number
----@param headButtArea number
-local function HeadButtUpdate(player, Damage, headButtArea)
-    
-end
-
-function mod:MainHeadButtLogic()
-    
-end
 
 ---@param player EntityPlayer
 function mod:OnAubreyHBHit(player)

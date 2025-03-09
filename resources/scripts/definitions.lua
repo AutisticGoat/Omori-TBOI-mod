@@ -79,6 +79,7 @@ OmoriMod.Enums = {
 		POST_KNIFE_UPDATE = "OmoriModCallbacks_POST_KNIFE_UPDATE", -- Fires after Knife logic update
 		HEADBUTT_ENEMY_HIT = "OmoriModCallbacls_HEADBUTT_ENEMY_HIT", -- Fires on Headbutt hit
 		HEADBUTT_ENEMY_KILL = "OmoriModCallbacls_HEADBUTT_ENEMY_KILL", -- Fires on Headbutt kill
+		EMOTION_CHANGE_TRIGGER = "OmoriModCallbacks_EMOTION_CHANGE_TRIGGER", -- Fires on Emotion change
 	},
 	---@enum KnifeType
 	KnifeType = {
@@ -305,7 +306,12 @@ OmoriMod.Enums = {
 		AfraidColor = Color(1, 1, 1, 1, 0.2, 0.2, 0.2),
 		StressColor = Color(1, 1, 1, 1, 0.2),
 		ReadyColor = Color(1, 1, 1, 1, 0.2, 0.6),
-		EmotionTitleOffset = Vector(0, -75)
+		EmotionTitleOffset = Vector(0, -75),
+		HappyColorMod = ColorModifier(1, 1, 0, 0.6, 0.1, 1.2),
+		SadColorMod = ColorModifier(0, 0.3, 1, 0.5, 0.1, 1.2),
+		AngryColorMod = ColorModifier(1, 0.3, 0, 0.7, 0.1, 1.2),
+		AfraidColorMod = ColorModifier(0.7, 0.7, 0.7, 0.4, 0, 1),
+		StressColorMod = ColorModifier(0.5, 0.4, 0.4, 0.7, 0, 1)
 	},
 }
 -- Globals end

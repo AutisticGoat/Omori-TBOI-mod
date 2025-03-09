@@ -1,7 +1,6 @@
 local mod = OmoriMod
 local enums = mod.Enums
 local tables = enums.Tables 
-local misc = enums.Misc
 local emotionFrame = tables.EmotionChartFrame
 local items = enums.CollectibleType
 
@@ -18,15 +17,14 @@ local EmotionChartSetFrame = {
 	["Furious"] = emotionFrame.Angry,
 }
 
-local ChartSprite = Sprite()
-ChartSprite:Load('gfx/items/emotionChart.anm2', true)
+local ChartSprite = Sprite('gfx/items/emotionChart.anm2', true)
 
 HudHelper.RegisterHUDElement({
 	ItemID = items.COLLECTIBLE_EMOTION_CHART,
 	Condition = function(player)
 		return OmoriMod.GetEmotion(player) ~= nil
 	end,
-	OnRender = function(player, playerHUDIndex, hudLayout, position, alpha, scale, itemID, slot)
+	OnRender = function(player, _, _, position, _, scale)
 		local emotion = OmoriMod.GetEmotion(player)
 		local frame = OmoriMod.When(emotion, EmotionChartSetFrame, 0)
 

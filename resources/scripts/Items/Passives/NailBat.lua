@@ -9,13 +9,11 @@ local game = utils.Game
 local items = enums.CollectibleType
 local knifeType = enums.KnifeType
 
----comment
 ---@param bat EntityEffect
 ---@param entity Entity
----@param damage number
 ---@param type KnifeType
 ---@return number?
-function mod:NailbatHit(bat, entity, damage, type)
+function mod:NailbatHit(bat, entity, _, type)
     local player = bat.SpawnerEntity:ToPlayer()
 
     if not player then return end
@@ -30,7 +28,6 @@ function mod:NailbatHit(bat, entity, damage, type)
 
     if homeRunChance <= maxChance then
         local randomNumber = OmoriMod.randomfloat(0.9, 1.1, rng)
-
         sfx:Play(sounds.SOUND_HOMERUN, 0.8, 0, false, randomNumber, 0)
         game:ShakeScreen(10)
         entity:AddEntityFlags(EntityFlag.FLAG_EXTRA_GORE)
@@ -39,7 +36,6 @@ function mod:NailbatHit(bat, entity, damage, type)
 end
 mod:AddCallback(callbacks.KNIFE_HIT_ENEMY, mod.NailbatHit)
 
----comment
 ---@param bat EntityEffect
 ---@param type KnifeType
 function mod:BatSwingTrigger(bat, type)
@@ -51,21 +47,3 @@ function mod:BatSwingTrigger(bat, type)
     sfx:Play(sounds.SOUND_AUBREY_SWING, 0.7, 2, false, 1.5, 0)
 end
 mod:AddCallback(callbacks.KNIFE_SWING_TRIGGER, mod.BatSwingTrigger)
-
-function mod:OnKnifeRemoving()
-	local players = PlayerManager.GetPlayers()
-	for _, player in ipairs(players) do
-        if not (player:HasCollectible(items.COLLECTIBLE_NAIL_BAT) or mod.IsAubrey(player, true)) then return end
-
-		OmoriMod.RemoveKnife(player, knifeType.NAIL_BAT)
-	end
-end
-mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, mod.OnKnifeRemoving)
-
----comment
----@param player EntityPlayer
-function mod:GiveNailBat(player)
-    if not (player:HasCollectible(items.COLLECTIBLE_NAIL_BAT) or mod.IsAubrey(player, true)) then return end
-    mod.GiveKnife(player, knifeType.NAIL_BAT)
-end
-mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.GiveNailBat)

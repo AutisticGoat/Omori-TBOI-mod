@@ -3,6 +3,7 @@ local enums = mod.Enums
 local enemyRadius = 80
 local costumes = enums.NullItemID
 local utils = enums.Utils
+local game = utils.Game
 local misc = enums.Misc
 local sfx = utils.SFX
 local knifeType = enums.KnifeType
@@ -24,8 +25,11 @@ function mod:SunnyInit(player)
     player:AddNullCostume(costumes.ID_SUNNY)
     player:AddNullCostume(costumes.ID_EMOTION)
 
-
     OmoriMod.SetEmotion(player, "Neutral")
+    OmoriMod.AddEmotionGlow(player)
+
+    OmoriMod.GiveKnife(player, knifeType.VIOLIN_BOW)
+
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.SunnyInit)
 
@@ -45,8 +49,6 @@ end
 ---@param player EntityPlayer
 function mod:SunnyStressingOut(player)
     if not OmoriMod.IsOmori(player, true) then return end
-
-    OmoriMod.GiveKnife(player, knifeType.VIOLIN_BOW)
     
     local emotion = funcs.GetEmotion(player)
 	local playerData = OmoriMod.GetData(player)    
@@ -54,7 +56,7 @@ function mod:SunnyStressingOut(player)
 
     if areNearEnemies then
         if emotion ~= "StressedOut" then
-            local counterToDecrease = (emotion == "Afraid") and "StressCounter" or "AfraidCounter"
+            local counterToDecrease = emotion == "Afraid" and "StressCounter" or "AfraidCounter"
             playerData[counterToDecrease] = math.max(playerData[counterToDecrease] - 1, 0)
         end
     else
@@ -81,3 +83,19 @@ function mod:SunnyStressingOut(player)
     end    
 end
 mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.SunnyStressingOut)
+
+function mod:UpdateSunnyColorModifier(player)
+    if not OmoriMod.IsOmori(player, true) then return end  
+
+    local emotion = funcs.GetEmotion(player)
+
+    if emotion == "Neutral" then return end
+
+    local targetColorMod = emotion == "Afraid" and misc.AfraidColorMod or misc.StressColorMod    
+    game:SetColorModifier(targetColorMod, true, 0.3)
+
+    Isaac.CreateTimer(function ()
+        game:GetRoom():UpdateColorModifier(true, true, 1000)
+    end, 0, 1, false)
+end
+mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.UpdateSunnyColorModifier)

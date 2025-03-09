@@ -1,5 +1,6 @@
 local mod = OmoriMod
 local enums = OmoriMod.Enums
+local game = enums.Utils.Game
 local tables = enums.Tables
 local misc = enums.Misc
 
@@ -33,7 +34,7 @@ HudHelper.RegisterHUDElement({
 }, HudHelper.HUDType.EXTRA)
 
 function mod:ChangeEmotionLogic(player)
-	if not OmoriMod.IsOmori(player, false) then return end
+	if not funcs.IsOmori(player, false) then return end
 	local emotion = funcs.GetEmotion(player)
 
 	if not OmoriMod:IsEmotionChangeTriggered(player) then return end
@@ -44,20 +45,34 @@ function mod:ChangeEmotionLogic(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.ChangeEmotionLogic)
 
--- function OmoriMod:RemoveEmotionGlow()
--- 	local players = PlayerManager.GetPlayers()
--- 	for _, player in ipairs(players) do
--- 		local playerData = OmoriMod.GetData(player)
--- 		if playerData.EmotionGlow then
--- 			playerData.EmotionGlow = nil
--- 		end
--- 	end
--- end
 
--- function mod:RemoveOnRoom()
--- 	OmoriMod:RemoveEmotionGlow()
--- end
--- mod:AddCallback(ModCallbacks.MC_POST_NEW_ROOM, OmoriMod.RemoveEmotionGlow)
+local EmotionColorChange = {
+	["Happy"] = misc.HappyColorMod,
+	["Sad"] = misc.SadColorMod,
+	["Angry"] = misc.AngryColorMod,
+	["Ecstatic"] = misc.HappyColorMod,
+	["Depressed"] = misc.SadColorMod,
+	["Enraged"] = misc.AngryColorMod,
+	["Manic"] = misc.HappyColorMod,
+	["Miserable"] = misc.SadColorMod,
+	["Furious"] = misc.AngryColorMod,
+}
+
+---@param player EntityPlayer
+---@param emotion string
+function mod:OnEmotionChange(player, emotion)
+	print(emotion)
+	local ColorMod = funcs.Switch(emotion, EmotionColorChange)
+
+	if not ColorMod then return end
+
+    game:SetColorModifier(ColorMod, true, 0.3)
+
+    Isaac.CreateTimer(function ()
+        game:GetRoom():UpdateColorModifier(true, true, 0.15)
+    end, 5, 1, false)
+end
+mod:AddCallback(enums.Callbacks.EMOTION_CHANGE_TRIGGER, mod.OnEmotionChange)
 
 function mod:OmoriOnNewLevel()
 	local players = PlayerManager.GetPlayers()
