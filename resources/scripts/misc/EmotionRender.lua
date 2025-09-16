@@ -45,7 +45,6 @@ function mod:ChangeEmotionLogic(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.ChangeEmotionLogic)
 
-
 local EmotionColorChange = {
 	["Happy"] = misc.HappyColorMod,
 	["Sad"] = misc.SadColorMod,
@@ -61,7 +60,6 @@ local EmotionColorChange = {
 ---@param player EntityPlayer
 ---@param emotion string
 function mod:OnEmotionChange(player, emotion)
-	print(emotion)
 	local ColorMod = funcs.Switch(emotion, EmotionColorChange)
 
 	if not ColorMod then return end

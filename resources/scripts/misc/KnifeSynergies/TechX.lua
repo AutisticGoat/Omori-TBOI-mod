@@ -9,8 +9,7 @@ function mod:TechXSwingTrigger(knife)
     if not player then return end
     if not player:HasCollectible(CollectibleType.COLLECTIBLE_TECH_X) then return end
 
-    local techX =
-    player:FireTechXLaser(
+    local techX = player:FireTechXLaser(
         knife.Position + Vector.FromAngle(knifeData.Aiming):Resized(30 * knife.SpriteScale.X),
         Vector.Zero,
         30 * knife.SpriteScale.X,

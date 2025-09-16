@@ -38,13 +38,11 @@ end
 ---@param rng RNG
 ---@return integer
 function OmoriMod.randomNumber(x, y, rng)
-    if not y then
+    rng = rng or utils.RNG
+	if not y then
         y = x
         x = 1
     end
-	if not rng then
-		rng = RNG()
-	end
     return (rng:RandomInt(y - x + 1)) + x
 end
 
@@ -145,9 +143,9 @@ function OmoriMod:TriggerHBParams(player, changeEmotion, SetEmotionCounter)
 end
 
 ---@param knife EntityEffect
----@return EntityPlayer
+---@return EntityPlayer?
 function OmoriMod:GetKnifeOwner(knife)
-	return knife.SpawnerEntity:ToPlayer() ---@type EntityPlayer
+	return knife.SpawnerEntity:ToPlayer() 
 end
 
 local function AreOppositeMovingDirectionPressed(player)
@@ -539,6 +537,16 @@ function OmoriMod:isFlagInBitmask(flag1, flag2)
     return flag1 & flag2 > 0
 end
 
+---Returns a chance based boolean
+---@param rng? RNG -- if `nil`, the function will use Mod's `RNG` object instead
+---@param chance? number if `nil`, default chance will be 0.5 (50%)
+function OmoriMod.RandomBoolean(rng, chance)
+	rng = rng or utils.RNG
+	chance = chance or 0.5
+
+	return rng:RandomFloat() <= chance
+end
+
 ---@param player EntityPlayer
 ---@param TearFlag TearFlags
 function OmoriMod:playerHasTearFlag(player, TearFlag)
@@ -642,11 +650,9 @@ function OmoriMod.SetEmotion(player, emotion)
 
 	OmoriMod:ChangeEmotionEffect(player)
 	OmoriMod:SunnyChangeEmotionEffect(player)
-
-	local AffectedFlags = CacheFlag.CACHE_DAMAGE | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_FIREDELAY | CacheFlag.CACHE_LUCK ---@type CacheFlag|integer
-	player:AddCacheFlags(AffectedFlags, true)
-
 	OmoriMod.ReplaceGlowSprite(player, playerData.EmotionGlow)
+
+	player:AddCacheFlags(CacheFlag.CACHE_DAMAGE | CacheFlag.CACHE_SPEED | CacheFlag.CACHE_FIREDELAY | CacheFlag.CACHE_LUCK --[[@as CacheFlag]], true)
 
 	Isaac.RunCallback(OmoriModCallbacks.EMOTION_CHANGE_TRIGGER, player, emotion)
 
@@ -657,8 +663,7 @@ end
 ---@param player EntityPlayer
 ---@return string
 function OmoriMod.GetEmotion(player)
-	local playerData = OmoriMod.GetData(player)
-	return playerData.PlayerEmotion 
+	return OmoriMod.GetData(player).PlayerEmotion 
 end
 
 local LINE_SPRITE = Sprite("gfx/1000.021_tiny bug.anm2", true)
@@ -716,25 +721,18 @@ end
 ---@param entity Entity
 ---@return EntityPlayer?
 function OmoriMod.GetPlayerFromAttack(entity)
-	for i=1, 3 do
-		local check = nil
-		if i == 1 then
-			check = entity.Parent
-		elseif i == 2 then
-			check = entity.SpawnerEntity
-		end
-		if check then
-			if check.Type == EntityType.ENTITY_PLAYER then
-				return OmoriMod.GetPtrHashEntity(check):ToPlayer()
-			elseif check.Type == EntityType.ENTITY_FAMILIAR and check.Variant == FamiliarVariant.INCUBUS
-			
-			then
-				local data = OmoriMod.GetData(entity)
-				data.IsIncubusTear = true
-				return check:ToFamiliar().Player:ToPlayer()
-			end
-		end
+	local check = entity.Parent or entity.SpawnerEntity
+
+	if not check then return end
+
+	local checkType = check.Type
+
+	if checkType == EntityType.ENTITY_PLAYER then
+		return OmoriMod.GetPtrHashEntity(check):ToPlayer()
+	elseif check.Type == EntityType.ENTITY_FAMILIAR then
+		return check:ToFamiliar().Player:ToPlayer()
 	end
+
 	return nil
 end
 
@@ -781,13 +779,15 @@ end
 ---@param DefaultEmotion string
 ---@param Tier2Emotion string
 ---@param Tier3Emotion string
-function OmoriMod.EmotionUpdateItem(player, emotionTable, DefaultEmotion ,Tier2Emotion, Tier3Emotion)
+function OmoriMod.EmotionUpdateItem(player, emotionTable, DefaultEmotion, Tier2Emotion, Tier3Emotion)
     local emotion = OmoriMod.GetEmotion(player)
 
-    if not emotion then OmoriMod.SetEmotion(player, "Neutral") end
+    if not emotion then OmoriMod.SetEmotion(player, DefaultEmotion) end
 
-    local newEmotion = OmoriMod.When(emotion, emotionTable, DefaultEmotion)
-    local maxEmotion = OmoriMod.IsOmori(player, false) and Tier3Emotion or Tier2Emotion
+	local maxEmotion = OmoriMod.IsOmori(player, false) and Tier3Emotion or Tier2Emotion
+	local newEmotion = (emotion == DefaultEmotion and Tier2Emotion) or ((emotion == Tier2Emotion and OmoriMod.IsOmori(player, false)) and Tier3Emotion) or DefaultEmotion
+
+    
     if emotion == maxEmotion then return end
 
     OmoriMod.SetEmotion(player, newEmotion)

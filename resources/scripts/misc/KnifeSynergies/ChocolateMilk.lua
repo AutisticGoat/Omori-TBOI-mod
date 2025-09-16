@@ -14,7 +14,6 @@ end
 function mod:GetWeaponCharge(player)
     local weapon = player:GetWeapon(1)
 
-    local playerData = OmoriMod.GetData(player)
     if not weapon then return end
     local weaponMod = weapon:GetModifiers()
     if not OmoriMod:isFlagInBitmask(weaponMod, WeaponModifier.CHOCOLATE_MILK) then return end
@@ -24,7 +23,7 @@ function mod:GetWeaponCharge(player)
     playerData.ChoccyCharge = playerData.ChoccyCharge or 0
 
     local baseMaxCharge = 26.5
-    local chargeFactor = (2.7272727272727 / OmoriMod:GetTPS(player)) -- it's not exact but it works
+    local chargeFactor = (2.73 / OmoriMod:GetTPS(player)) -- it's not exact but it works
     local charge = weapon:GetCharge()
 
     if charge ~= 0 then

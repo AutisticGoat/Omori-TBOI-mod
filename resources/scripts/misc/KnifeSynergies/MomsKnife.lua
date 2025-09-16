@@ -1,7 +1,5 @@
 local mod = OmoriMod
 local enums = mod.Enums
-local utils = enums.Utils
-local rng = utils.RNG
 local Callbacks = enums.Callbacks
 
 ---comment
@@ -14,6 +12,6 @@ function mod:MomsKnifeDamage(knife, _, damage)
     if not player:HasCollectible(CollectibleType.COLLECTIBLE_MOMS_KNIFE) then return end
     local knifeData = OmoriMod.GetData(knife)
 
-    knifeData.Damage = knifeData.Damage * 0.75
+    knifeData.Damage = damage * 0.75
 end
 mod:AddCallback(Callbacks.KNIFE_HIT_ENEMY, mod.MomsKnifeDamage)

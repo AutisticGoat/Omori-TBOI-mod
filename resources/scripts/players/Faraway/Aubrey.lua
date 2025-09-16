@@ -144,8 +144,6 @@ function mod:NullFarawayHeadbuttDamage(entity, _, flags, source)
 
     local playerData = OmoriMod.GetData(player)
     
-    if playerData.HeadButt == true then
-        return false 
-    end
+    if playerData.HeadButt == true then return false end
 end
 mod:AddCallback(ModCallbacks.MC_PRE_PLAYER_TAKE_DMG, mod.NullFarawayHeadbuttDamage)

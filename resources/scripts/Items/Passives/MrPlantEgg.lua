@@ -20,10 +20,8 @@ function mod:TriggerMrEggplantHit(player, ent)
     OmoriMod.GiveKnife(player, knifeType.MR_PLANT_EGG)
 
     local MrEggplant = OmoriMod.GetKnife(player, knifeType.MR_PLANT_EGG)
-
     local MrESprite = MrEggplant:GetSprite()
     local MrEData = OmoriMod.GetData(MrEggplant)
-
     local playerPos = player.Position
     local entPos = ent.Position
 
@@ -32,6 +30,9 @@ function mod:TriggerMrEggplantHit(player, ent)
     MrESprite:Play("Swing")
 end
 
+---@param entity Entity
+---@param flags DamageFlag
+---@param source EntityRef
 function mod:PlayerTriggerMrEggplant(entity, _, flags, source)
     local player = entity:ToPlayer()    
 
@@ -45,9 +46,8 @@ function mod:PlayerTriggerMrEggplant(entity, _, flags, source)
 
     local enemy = ent:IsActiveEnemy() and ent:IsVulnerableEnemy()
 
-    if enemy then
-        mod:TriggerMrEggplantHit(player, ent)
-    end
+    if not enemy then return end
+    mod:TriggerMrEggplantHit(player, ent)
 end
 mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, mod.PlayerTriggerMrEggplant)
 
@@ -55,7 +55,7 @@ mod:AddCallback(ModCallbacks.MC_ENTITY_TAKE_DMG, mod.PlayerTriggerMrEggplant)
 ---@param knife EntityEffect
 ---@param type KnifeType
 function mod:RemoveMrEggPlant(knife, type)
-    local player = knife.SpawnerEntity:ToPlayer()
+    local player = mod:GetKnifeOwner(knife)
     if not player then return end
     if type ~= knifeType.MR_PLANT_EGG then return end
     local sprite = knife:GetSprite() 

@@ -42,7 +42,6 @@ function mod:onKnifeGodheadSwing(knife)
 end
 mod:AddCallback(Callbacks.KNIFE_SWING_UPDATE, mod.onKnifeGodheadSwing)
 
-
 function mod:onKnifeGodheadSwingFinish(knife)
     local knifeData = OmoriMod.GetData(knife)
 

@@ -27,7 +27,7 @@ if not REPENTOGON then
     return
 end
 
-OmoriMod.saveManager = include("resources.scripts.misc.save_manager")
+OmoriMod.saveManager = require("resources.scripts.misc.save_manager")
 OmoriMod.saveManager.Init(OmoriMod)
 
 include("include")

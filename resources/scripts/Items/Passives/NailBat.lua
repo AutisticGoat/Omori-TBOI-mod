@@ -9,6 +9,11 @@ local game = utils.Game
 local items = enums.CollectibleType
 local knifeType = enums.KnifeType
 
+function mod:NailBatGive(_, _, _, _, _, player)
+    mod.GiveKnife(player, knifeType.NAIL_BAT)
+end
+mod:AddCallback(ModCallbacks.MC_POST_ADD_COLLECTIBLE, mod.NailBatGive, items.COLLECTIBLE_NAIL_BAT)
+
 ---@param bat EntityEffect
 ---@param entity Entity
 ---@param type KnifeType

@@ -39,17 +39,11 @@ function mod:PreAddOmoriCostume(itemconfig, player)
 	local rawCostume = modCharacters[player:GetPlayerType()]
 
 	if not rawCostume then return end
-
-	table.insert(overrideCostumes, rawCostume)
-
+	overrideCostumes[rawCostume] = true
 	local costumeID = itemconfig.Costume.ID
+	local OverrideCostume = mod.When(costumeID, overrideCostumes, false)
 
-	if costumeID == rawCostume or costumeID == costumes.ID_EMOTION or costumeID == 625 or costumeID == 58 then
-		return
-	end
-	
-	OmoriMod:ChangeEmotionEffect(player, false)
-
+	if OverrideCostume then return end
 	return true
 end
 mod:AddCallback(ModCallbacks.MC_PRE_PLAYER_ADD_COSTUME, mod.PreAddOmoriCostume)

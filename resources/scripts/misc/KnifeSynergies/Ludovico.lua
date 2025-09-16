@@ -17,7 +17,6 @@ end
 
 function mod:ForceSpawnFakeLudoTear(player)
     if not player:HasCollectible(CollectibleType.COLLECTIBLE_LUDOVICO_TECHNIQUE) then return end
-
     SpawnLudoTear(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.ForceSpawnFakeLudoTear)
@@ -25,12 +24,12 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.ForceSpawnFakeLudoTear)
 function OmoriMod:KillLudoTear(player)
     local playerData = OmoriMod.GetData(player)
 
-    if playerData.LudoTear then
-        playerData.LudoTear:Remove()
-        playerData.LudoTear = nil
-    end
+    if not playerData.LudoTear then return end
+    playerData.LudoTear:Remove()
+    playerData.LudoTear = nil
 end
 
+---@param tear EntityTear
 function mod:LudoTearUpdate(tear)
     local tearData = OmoriMod.GetData(tear)
 
@@ -43,7 +42,6 @@ function mod:LudoTearUpdate(tear)
     tear.Height = -23
 
     local damageDiv = 3.5
-			
 	local multScale = math.max((player.Damage / damageDiv), 1)
 				
 	tear.Scale = 1.55 * multScale

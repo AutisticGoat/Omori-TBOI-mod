@@ -27,7 +27,6 @@ HudHelper.RegisterHUDElement({
 	OnRender = function(player, _, _, position, _, scale)
 		local emotion = OmoriMod.GetEmotion(player)
 		local frame = OmoriMod.When(emotion, EmotionChartSetFrame, 0)
-
 		local offset = scale == 1 and Vector(16, 16) or Vector(8,8)
 
 		ChartSprite.Scale = Vector.One * scale
@@ -40,7 +39,7 @@ HudHelper.RegisterHUDElement({
 ---@param player EntityPlayer
 ---@return integer
 function mod:ChangeEmotionChartCharges(_, player)
-	return OmoriMod.IsOmori(player, false) and (player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 2 or 4) or 3
+	return mod.IsOmori(player, false) and (player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 2 or 4) or 3
 end
 mod:AddCallback(ModCallbacks.MC_PLAYER_GET_ACTIVE_MAX_CHARGE, mod.ChangeEmotionChartCharges, items.COLLECTIBLE_EMOTION_CHART)
 
@@ -59,13 +58,12 @@ function mod:SelfelpGuideUseOmori(_, _, player, flags)
 	if CarBatteryUse then return end
 	local HasCarBattery = player:HasCollectible(CollectibleType.COLLECTIBLE_CAR_BATTERY) ---@type boolean
 	local emotion = OmoriMod.GetEmotion(player)
-	local IsMaxEmotionOrNeutral = tables.NoDischargeEmotions[emotion] or false
+	local IsMaxEmotionOrNeutral = mod.When(emotion, tables.NoDischargeEmotions, false) 
 	
 	if IsMaxEmotionOrNeutral == true then return {Discharge = false} end
 	
 	local tableRef = conditionMap[OmoriMod.IsOmori(player, false)][HasCarBattery]
-	
-	local EmotionToChange = tableRef[emotion]
+	local EmotionToChange = mod.When(emotion, tableRef, "Neutral")
 	
 	OmoriMod.SetEmotion(player, EmotionToChange)
 	OmoriMod:ChangeEmotionEffect(player, true)
@@ -78,8 +76,7 @@ mod:AddCallback(ModCallbacks.MC_USE_ITEM, mod.SelfelpGuideUseOmori, items.COLLEC
 ---@param player EntityPlayer
 function mod:OnSelfHelpGuideTaking(_, _, _, _, _, player)
 	if OmoriMod.IsAnyOmori(player) then return end 
-	if OmoriMod.GetEmotion(player) == nil then
-		OmoriMod.SetEmotion(player, "Happy")
-	end
+	if OmoriMod.GetEmotion(player) then return end
+	OmoriMod.SetEmotion(player, "Happy")
 end
 mod:AddCallback(ModCallbacks.MC_PRE_ADD_COLLECTIBLE, mod.OnSelfHelpGuideTaking, items.COLLECTIBLE_EMOTION_CHART)

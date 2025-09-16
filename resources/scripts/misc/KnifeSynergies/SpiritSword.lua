@@ -33,7 +33,6 @@ function mod:FullChargeAttack(knife)
     local playerData = OmoriMod.GetData(player)
 
     if not player:HasCollectible(CollectibleType.COLLECTIBLE_SPIRIT_SWORD) then return end
-
     if playerData.shinyKnifeCharge ~= 100 then return end
 
     knifeData.Damage = knifeData.Damage * 1.5
@@ -47,7 +46,6 @@ function mod:OnSwordFullSwinging(knife)
     local playerData = OmoriMod.GetData(player)
 
     if not player:HasCollectible(CollectibleType.COLLECTIBLE_SPIRIT_SWORD) then return end
-
     if playerData.shinyKnifeCharge ~= 100 then return end
 
     OmoriMod.SetKnifeSizeMult(knife, 1.5)

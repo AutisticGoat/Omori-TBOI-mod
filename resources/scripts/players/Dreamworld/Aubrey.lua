@@ -49,11 +49,9 @@ mod:AddCallback(ModCallbacks.MC_EVALUATE_CACHE, mod.AubreyStats)
 function mod:OnAubreyHBHit(player)
     local emotion = mod.GetEmotion(player)
     local playerData = mod.GetData(player)
-
     local Damage = (player.Damage * 2) * math.max(player.MoveSpeed, 1) * HBParams[emotion].DamageMult
 
     playerData.HeadButtDamage = Damage
-
 end
 mod:AddCallback(OmoriCallbacks.HEADBUTT_ENEMY_HIT, mod.OnAubreyHBHit)
 

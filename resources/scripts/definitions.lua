@@ -314,29 +314,17 @@ OmoriMod.Enums = {
 		StressColorMod = ColorModifier(0.5, 0.4, 0.4, 0.7, 0, 1)
 	},
 }
--- Globals end
 
 local game = OmoriMod.Enums.Utils.Game
 
-local function setRNG()
-	local rng = OmoriMod.Enums.Utils.RNG
-	local RECOMMENDED_SHIFT_IDX = 35
-	
-	local seeds = game:GetSeeds()
-	local startSeed = seeds:GetStartSeed()
-	
-	rng:SetSeed(startSeed, RECOMMENDED_SHIFT_IDX)	
-end
-
 function OmoriMod:GameStartedFunction()
-	setRNG()
+	local rng = OmoriMod.Enums.Utils.RNG
+	rng:SetSeed(game:GetSeeds():GetStartSeed(), 35)	
 end
 OmoriMod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, OmoriMod.GameStartedFunction)
 
 function OmoriMod:SetObjects()
 	OmoriMod.Enums.Utils.Room = game:GetRoom()
 	OmoriMod.Enums.Utils.Level = game:GetLevel()
-	
-	-- print(OmoriMod.Enums.Utils.Room, OmoriMod.Enums.Utils.Level)
 end
 OmoriMod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, OmoriMod.SetObjects)

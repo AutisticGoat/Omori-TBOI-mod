@@ -38,8 +38,6 @@ function mod:AubreyInputs(player)
 
     local enemies = Isaac.FindInCapsule(capsule, EntityPartition.ENEMY)
     for _, ent in pairs(enemies) do
-        if not playerData.HeadButt then return end
-
         playerData.HeadButtDamage = 0
         Isaac.RunCallback(OmoriCallbacks.HEADBUTT_ENEMY_HIT, player, ent)
         
