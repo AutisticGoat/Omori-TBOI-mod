@@ -9,6 +9,7 @@ local HBParams = tables.AubreyHeadButtParams
 local misc = enums.Misc
 local sounds = enums.SoundEffect
 local knifeType = enums.KnifeType
+local emotionElement = enums.EmotionElement
 local OmoriModCallbacks = enums.Callbacks
 
 function OmoriMod.GetScreenCenter()
@@ -33,6 +34,17 @@ function OmoriMod:GetAceleration(entity)
 	return OmoriMod:Round(entity.Velocity:Length(), 2)
 end
 
+---@param player EntityPlayer
+function OmoriMod:HasBirthright(player)
+	return player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT)
+end
+
+---@param entity Entity
+---@return boolean	
+function OmoriMod:IsEnemy(entity)
+	return entity:IsVulnerableEnemy() and entity:IsActiveEnemy()
+end
+
 ---@param x integer
 ---@param y integer
 ---@param rng RNG
@@ -46,20 +58,28 @@ function OmoriMod.randomNumber(x, y, rng)
     return (rng:RandomInt(y - x + 1)) + x
 end
 
+---Returns a chance based boolean
+---@param rng? RNG -- if `nil`, the function will use Mod's `RNG` object instead
+---@param chance? number if `nil`, default chance will be 0.5 (50%)
+function OmoriMod.RandomBoolean(rng, chance)
+	rng = rng or utils.RNG
+	chance = chance or 0.5
+
+	return rng:RandomFloat() <= chance
+end
+
 --- @param x number
 --- @param y number
 --- @param rng RNG
 --- @return number
 function OmoriMod.randomfloat(x, y, rng)
+	rng = rng or utils.RNG
     if not y then
         y = x
         x = 0
     end
     x = x * 1000
     y = y * 1000
-    if not rng then
-        rng = RNG()
-    end
     return math.floor((rng:RandomInt(y - x + 1)) + x) / 1000
 end
 
@@ -180,6 +200,17 @@ function OmoriMod:InitHeadbutt(player)
 	end
 
 	player:SetColor(misc.ReadyColor, 5, -1, true, true)
+end
+
+---Function used to trigger some player flashes (Sunny's emotion change indicator)
+---@param player EntityPlayer
+---@param counter number
+---@param color Color
+---@param sound SoundEffect
+function OmoriMod:TriggerPlayerFlash(player, counter, color, sound)
+	if not (counter <= 30 and counter > 0 and counter % 10 == 0) then return end
+	sfx:Play(sound)
+	player:SetColor(color, 8, -1, true, true)
 end
 
 ---I mean, just swings the knife, there's not much science here
@@ -333,19 +364,22 @@ function OmoriMod.WhenEval(value, cases, default)
     return v
 end
 
----Brings an Omori mod's knife entity to the player
+---@param knife EntityEffect
+---@return OmoriModKnifeData?
+function OmoriMod:GetKnifeData(knife)
+	if not knife.Variant == OmoriMod.Enums.EffectVariant.EFFECT_SHINY_KNIFE then return end
+	return OmoriMod.GetData(knife) --[[@as OmoriModKnifeData]]
+end
+
+---Gives a mod's knife entity to the player
 ---@param player EntityPlayer
 ---@param Type KnifeType
 function OmoriMod.GiveKnife(player, Type)
 	local playerData = OmoriMod.GetData(player)
 
-	if not playerData.KnifeData then
-		playerData.KnifeData = {}
-	end		
+	if playerData.Knife then return end 
+	-- if OmoriMod.GetKnife(player, Type) then return end
 	
-	if OmoriMod.GetKnife(player, Type) then return end
-
-	local knifeData = playerData.KnifeData
 
 	local knife = Isaac.Spawn(
 		EntityType.ENTITY_EFFECT,
@@ -354,75 +388,50 @@ function OmoriMod.GiveKnife(player, Type)
 		player.Position,
 		Vector.Zero,
 		player
-	):ToEffect()
+	):ToEffect() ---@cast knife EntityEffect
 
-	local knifeTypes = {
-		[knifeType.SHINY_KNIFE] = function() knifeData.ShinyKnife = knife end,
-		[knifeType.VIOLIN_BOW] = function() knifeData.ViolinBow = knife end,
-		[knifeType.MR_PLANT_EGG] = function() knifeData.MrPlantEgg = knife end,
-		[knifeType.NAIL_BAT] = function() knifeData.BaseballBat = knife end,
-	}
+	local knifeData = OmoriMod:GetKnifeData(knife)
 
-	if not knife then return end
-
+	knife:FollowParent(player)
+	knifeData.KnifeType = Type
 	knife:AddEntityFlags(EntityFlag.FLAG_PERSISTENT)
-
-	KnifeData = OmoriMod.GetData(knife)
-	KnifeData.KnifeType = Type
-
 	OmoriMod:ReplaceKnifeSprite(player, knife, Type)
-	OmoriMod.When(Type, knifeTypes)()
+	playerData.Knife = knife
 end
 
----Returns a mod's Knife entity depending on its type
+---Returns a mod's Knife entity
 ---@param player EntityPlayer
----@param type KnifeType
----@return EntityEffect
-function OmoriMod.GetKnife(player, type)
-	local playerData = OmoriMod.GetData(player)
-	local knifeData = playerData.KnifeData
-
-	local cases = {
-		[knifeType.SHINY_KNIFE] = knifeData.ShinyKnife,
-		[knifeType.VIOLIN_BOW] = knifeData.ViolinBow,
-		[knifeType.MR_PLANT_EGG] = knifeData.MrPlantEgg,
-		[knifeType.NAIL_BAT] = knifeData.BaseballBat,
-	}
-
-	return OmoriMod.When(type, cases)
+---@return EntityEffect?
+function OmoriMod.GetKnife(player)
+	return OmoriMod.GetData(player).Knife
 end
 
 ---Removes mod's knife of given `type` from player
 ---@param player EntityPlayer
 ---@param type KnifeType
-function OmoriMod.RemoveKnife(player, type)
+function OmoriMod.RemoveKnife(player)
 	local playerData = OmoriMod.GetData(player)
 	local knifeData = playerData.KnifeData
 
 	if not knifeData then return end
 
-	local knife = OmoriMod.GetKnife(player, type)
+	local knife = OmoriMod.GetKnife(player)
 
 	if not knife then return end
 
-	local cases = {
-		[knifeType.SHINY_KNIFE] = function() knifeData.ShinyKnife:Remove(); knifeData.ShinyKnife = nil end,
-		[knifeType.VIOLIN_BOW] = function() knifeData.ViolinBow:Remove(); knifeData.ViolinBow = nil end,
-		[knifeType.MR_PLANT_EGG] = function() knifeData.MrPlantEgg:Remove(); knifeData.MrPlantEgg = nil end,
-		[knifeType.NAIL_BAT] = function() knifeData.BaseballBat:Remove(); knifeData.BaseballBat = nil end,
-	}
-
-	OmoriMod.WhenEval(type, cases)
+	knife:Remove()
+	playerData.Knife = nil
 end
 
 ---@param player EntityPlayer
 ---@return Vector
 function OmoriMod:GetAimingDirection(player)
-    if player:HasCollectible(CollectibleType.COLLECTIBLE_MARKED) or
-            player:HasCollectible(CollectibleType.COLLECTIBLE_ANALOG_STICK) or
-            player:HasCollectible(CollectibleType.COLLECTIBLE_EYE_OF_THE_OCCULT) or
-            player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
-            player:HasCollectible(CollectibleType.COLLECTIBLE_LUDOVICO_TECHNIQUE)
+    if
+		player:HasCollectible(CollectibleType.COLLECTIBLE_MARKED) or
+		player:HasCollectible(CollectibleType.COLLECTIBLE_ANALOG_STICK) or
+		player:HasCollectible(CollectibleType.COLLECTIBLE_EYE_OF_THE_OCCULT) or
+		player:HasCollectible(CollectibleType.COLLECTIBLE_EPIC_FETUS) or
+		player:HasCollectible(CollectibleType.COLLECTIBLE_LUDOVICO_TECHNIQUE)
     then
         return player:GetAimDirection()
     end
@@ -435,11 +444,12 @@ end
 function OmoriMod:IsPlayerShooting(player, CheckInput)
 	CheckInput = CheckInput or false
 	if CheckInput then
+		local idx = player.ControllerIndex
 		return (
-			Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, player.ControllerIndex) or
-			Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, player.ControllerIndex) or
-			Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, player.ControllerIndex) or
-			Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, player.ControllerIndex) 
+			Input.IsActionPressed(ButtonAction.ACTION_SHOOTDOWN, idx) or
+			Input.IsActionPressed(ButtonAction.ACTION_SHOOTLEFT, idx) or
+			Input.IsActionPressed(ButtonAction.ACTION_SHOOTRIGHT, idx) or
+			Input.IsActionPressed(ButtonAction.ACTION_SHOOTUP, idx)
 		)
 	else
 		local aim = OmoriMod:GetAimingDirection(player)
@@ -450,11 +460,12 @@ end
 ---@param player EntityPlayer
 ---@return boolean
 function OmoriMod:IsShootTriggered(player)
+	local idx = player.ControllerIndex
 	return (
-		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, player.ControllerIndex) or
-		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, player.ControllerIndex) or
-		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, player.ControllerIndex) or
-		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, player.ControllerIndex) 
+		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTDOWN, idx) or
+		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTLEFT, idx) or
+		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTRIGHT, idx) or
+		Input.IsActionTriggered(ButtonAction.ACTION_SHOOTUP, idx) 
 	)
 end
 
@@ -464,11 +475,12 @@ end
 function OmoriMod:IsPlayerMoving(player, CheckInput)
 	CheckInput = CheckInput or false
 	if CheckInput then
+		local idx = player.ControllerIndex
 		return (
-			Input.IsActionPressed(ButtonAction.ACTION_DOWN, player.ControllerIndex) or
-			Input.IsActionPressed(ButtonAction.ACTION_UP, player.ControllerIndex) or
-			Input.IsActionPressed(ButtonAction.ACTION_LEFT, player.ControllerIndex) or
-			Input.IsActionPressed(ButtonAction.ACTION_RIGHT, player.ControllerIndex) 
+			Input.IsActionPressed(ButtonAction.ACTION_DOWN, idx) or
+			Input.IsActionPressed(ButtonAction.ACTION_UP, idx) or
+			Input.IsActionPressed(ButtonAction.ACTION_LEFT, idx) or
+			Input.IsActionPressed(ButtonAction.ACTION_RIGHT, idx) 
 		)
 	else
 		local mov = player:GetMovementVector()
@@ -498,11 +510,9 @@ local characterFolder = {
 
 ---Triggers all emotion SFX and VFX from `OmoriMod.SetEmotion()`, Is preferable to be used in tandem with that function but can be used alone if needed
 ---@param player EntityPlayer
----@param playSound? boolean
+---@param playSound? boolean?
 function OmoriMod:ChangeEmotionEffect(player, playSound)
 	if OmoriMod.IsOmori(player, true) then return end
-
-	playSound = playSound or false
 
 	local emotion = OmoriMod.GetEmotion(player)
 	local charFolderTarget = OmoriMod.When(player:GetPlayerType(), characterFolder)
@@ -516,7 +526,7 @@ function OmoriMod:ChangeEmotionEffect(player, playSound)
 		EmotionCostumeSprite:ReplaceSpritesheet(0, spriteRoot .. charFolderTarget .. EmotionSuffix .. ".png", true)
 	end
 
-	if player.FrameCount == 0 or playSound == false then return end
+	if player.FrameCount == 0 or not playSound then return end
 	sfx:Play(EmotionSound, 2, 0, false, 1, 0)
 end
 
@@ -535,16 +545,6 @@ OmoriMod:AddCallback(ModCallbacks.MC_POST_GAME_STARTED, OmoriMod.EmotionEffectCa
 ---@return boolean
 function OmoriMod:isFlagInBitmask(flag1, flag2)
     return flag1 & flag2 > 0
-end
-
----Returns a chance based boolean
----@param rng? RNG -- if `nil`, the function will use Mod's `RNG` object instead
----@param chance? number if `nil`, default chance will be 0.5 (50%)
-function OmoriMod.RandomBoolean(rng, chance)
-	rng = rng or utils.RNG
-	chance = chance or 0.5
-
-	return rng:RandomFloat() <= chance
 end
 
 ---@param player EntityPlayer
@@ -666,6 +666,55 @@ function OmoriMod.GetEmotion(player)
 	return OmoriMod.GetData(player).PlayerEmotion 
 end
 
+local emotionsStages = {
+	["Happy"] = {
+		Element = emotionElement.HAPPINESS,
+		Stage = 1,
+	},
+	["Sad"] = {
+		Element = emotionElement.SADNESS,
+		Stage = 1,
+	},
+	["Angry"] = {
+		Element = emotionElement.ANGER,
+		Stage = 1,
+	},
+	["Ecstatic"] = {
+		Element = emotionElement.HAPPINESS,
+		Stage = 2,
+	},
+	["Depressed"] = {
+		Element = emotionElement.SADNESS,
+		Stage = 2,
+	},
+	["Enraged"] = {
+		Element = emotionElement.ANGER,
+		Stage = 2,
+	},
+	["Manic"] = {
+		Element = emotionElement.HAPPINESS,
+		Stage = 3,
+	},
+	["Miserable"] = {
+		Element = emotionElement.SADNESS,
+		Stage = 3,
+	},
+	["Furious"] = {
+		Element = emotionElement.ANGER,
+		Stage = 3,
+	}
+}
+
+---@param player EntityPlayer
+---@return EmotionElement
+function OmoriMod.GetEmotionElement(player)
+	return OmoriMod.When(OmoriMod.GetEmotion(player), emotionsStages).Element or nil
+end
+
+function OmoriMod.GetemotionStage(player)
+	return OmoriMod.When(OmoriMod.GetEmotion(player), emotionsStages).Stage or 0
+end
+
 local LINE_SPRITE = Sprite("gfx/1000.021_tiny bug.anm2", true)
 LINE_SPRITE:SetFrame("Dead", 0)
 
@@ -674,7 +723,7 @@ local ANGLE_SEPARATION = 360 / MAX_POINTS
 
 ---@param entity Entity
 ---@param AreaSize number
-function RenderAreaOfEffect(entity, AreaSize)
+function OmoriMod.RenderAreaOfEffect(entity, AreaSize)
 	local hitboxPosition = entity.Position
 	local renderPosition = Isaac.WorldToScreen(hitboxPosition) - Game().ScreenShakeOffset
 	local offset = Isaac.WorldToScreen(hitboxPosition + Vector(0, AreaSize)) - renderPosition + Vector(0, 1)
@@ -687,6 +736,17 @@ function RenderAreaOfEffect(entity, AreaSize)
 		LINE_SPRITE.Offset = offset:Rotated(angle)
 		LINE_SPRITE:Render(renderPosition)
 	end
+end
+
+---Helper function that returns `EntityPlayer` from `EntityRef`
+---@param EntityRef EntityRef
+---@return EntityPlayer?
+function OmoriMod.GetPlayerFromRef(EntityRef)
+	local ent = EntityRef.Entity
+
+	if not ent then return nil end
+	local familiar = ent:ToFamiliar()
+	return ent:ToPlayer() or OmoriMod.GetPlayerFromAttack(ent) or (familiar and familiar.Player) 
 end
 
 ---@param x number

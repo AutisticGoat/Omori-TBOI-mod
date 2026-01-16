@@ -351,11 +351,16 @@ Ver 2.0.1 (12/26/2024)
     - Updated some sprites 
     - Updated pastebin
 
-Ver 2.1.0
+Ver 3.0
 - Fixes:
     - Fixed Omori not visually updating his emotion when using Emotion Chart
     - Fixed Omori visually reseting his emotion when changing floor
 - Additions:
     - Added following items:
-        - Mr PlantEgg: Counters with MrEggPlant on getting Hit
-        - Baseball Bat: Behaves like Shiny Knife, but having a small chance to instakill enemies and bosses
+        Passives: 
+            - Mr PlantEgg: Counters with MrEggPlant on getting Hit
+            - Baseball Bat: Behaves like Shiny Knife, but having a small chance to instakill enemies and bosses
+        Actives:
+            - Sparkler: Turns Isaac Happy
+            - Poetry Book: Turns Isaac Sad
+            - Present: Turns Isaac Angry

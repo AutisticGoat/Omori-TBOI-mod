@@ -16,7 +16,8 @@
 		description="A guide about emotions" 
 		gfx="emotion_chart.png"
 		quality="2" 
-		maxcharges="3"
+		chargetype="timed"
+		maxcharges="270"
 		tags="offensive"
 	/>
 	<active
@@ -25,7 +26,8 @@
 		description="Take a deep breath" 
 		gfx="calmdown.png"
 		quality="0" 
-		maxcharges="2"
+		chargetype="timed"
+		maxcharges="180"
 		hidden="true"
 	/>
 	<active
@@ -34,7 +36,8 @@
 		description="Gather all your courage" 
 		gfx="overcome.png"
 		quality="0" 
-		maxcharges="2"
+		chargetype="timed"
+		maxcharges="120"
 		hidden="true"
 	/>
 	<passive
@@ -64,6 +67,7 @@
 	<active
 		id="8"
 		name="Sparkler"
+		gfx="sparkler.png"
 		description="Little fires"
 		tags="offensive summonable"
 		maxcharges="1"
@@ -71,6 +75,7 @@
 	<active
 		id="9"
 		name="Poetry book"
+		gfx="poetrybook.png"
 		description="Sad words strung together"
 		tags="offensive summonable"
 		maxcharges="1"
@@ -78,8 +83,49 @@
 	<active
 		id="10"
 		name="Present"
+		gfx="present.png"
 		description="It's not what you wanted..."
 		tags="offensive summonable"
+		maxcharges="1"
+	/>
+	<active
+		id="11"
+		name="Air horn"
+		gfx="airhorn.png"
+		description="Who would invent this!?"
+		tags="offensive summonable"
+		maxcharges="1"
+	/>
+	<active
+		id="12"
+		name="Confetti"
+		description="Small squares of colorful paper"
+		gfx="raincloud.png"
+		tags="offensive summonable"
+		maxcharges="1"
+	/>
+	<active
+		id="13"
+		name="Rain cloud"
+		gfx="raincloud.png"
+		description="Angsty water droplets"
+		tags="offensive summonable"
+		maxcharges="1"
+	/>
+	<active
+		id="14"
+		name="Self-Help guide"
+		description="A book all about battles"
+		tags="offensive summonable"
+		gfx="selfhelpguide.png"
+		maxcharges="1"
+	/>
+	<active
+		id="15"
+		name="Rubber Ball"
+		description="Playground-tested, child-approved"
+		tags="offensive summonable"
+		gfx="selfhelpguide.png"
 		maxcharges="1"
 	/>
 </items>

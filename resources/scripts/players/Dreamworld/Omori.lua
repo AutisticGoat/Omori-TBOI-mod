@@ -4,13 +4,9 @@ local costumes = enums.NullItemID
 local players = enums.PlayerType
 local knifeType = enums.KnifeType
 
-local funcs = {
-	IsOmori = mod.IsOmori,
-}
-
 ---@param player EntityPlayer
 function mod:OmoriInit(player)
-	if not funcs.IsOmori(player, false) then return end
+	if not mod.IsOmori(player, false) then return end
 	player:AddNullCostume(costumes.ID_OMORI)
 	player:AddNullCostume(costumes.ID_EMOTION)
 	OmoriMod.SetEmotion(player, "Neutral")
@@ -63,10 +59,10 @@ function mod:OmoUpdate(player)
 	if not OmoriMod:IsKnifeUser(player) then return end		
 	local weapon = player:GetWeapon(1)
 	
-	if weapon == nil then return end
+	if not weapon then return end
 	local override = OmoriMod.When(weapon:GetWeaponType(), overrideWeapons, false) 
 
-	if override == true then
+	if override then
 		local newWeapon = Isaac.CreateWeapon(WeaponType.WEAPON_TEARS, player)
 		Isaac.DestroyWeapon(weapon)
 		player:EnableWeaponType(WeaponType.WEAPON_TEARS, true)
@@ -82,10 +78,12 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.OmoUpdate)
 ---@param player EntityPlayer
 ---@param flags CacheFlag
 function mod:OmoriStats(player, flags)
-	if not funcs.IsOmori(player, false) then return end
+	if not mod.IsOmori(player, false) then return end
 
 	player:AddNullCostume(costumes.ID_OMORI)
 	player:AddNullCostume(costumes.ID_EMOTION)
+
+	mod:ChangeEmotionEffect(player)
 
 	if flags == CacheFlag.CACHE_DAMAGE then
 		player.Damage = player.Damage * 1.1

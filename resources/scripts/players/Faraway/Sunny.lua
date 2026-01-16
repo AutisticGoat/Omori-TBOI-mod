@@ -5,96 +5,109 @@ local costumes = enums.NullItemID
 local utils = enums.Utils
 local game = utils.Game
 local misc = enums.Misc
-local sfx = utils.SFX
 local knifeType = enums.KnifeType
 
-local funcs = {
-    GiveKnife = mod.GiveKnife,
-    GetEmotion = mod.GetEmotion,
+local emotions = {
+    ["Neutral"] =  {
+        Counter = "AfraidCounter",
+        Color = misc.AfraidColor,
+        Emotion = "Afraid",
+    },
+    ["Afraid"] = {
+        Counter = "StressCounter",
+        Color = misc.StressColor,
+        Emotion = "StressedOut"
+    },
 }
 
+local colorMods = {
+    ["Afraid"] = misc.AfraidColorMod,
+    ["StressedOut"] = misc.StressColorMod,
+}
+
+local swingSpeed = {
+    ["Neutral"] = 1.25,
+    ["Afraid"] = 1.375,
+    ["StressedOut"] = 1.5
+}
 ---@param player EntityPlayer
 function mod:SunnyInit(player)
-    if not OmoriMod.IsOmori(player, true) then return end
+    if not mod.IsOmori(player, true) then return end
 
-	local playerData = OmoriMod.GetData(player)
+	local playerData = mod.GetData(player)
     
-	playerData.AfraidCounter = playerData.AfraidCounter or 90
-    playerData.StressCounter = playerData.StressCounter or 150
+	playerData.AfraidCounter = playerData.AfraidCounter or 60
+    playerData.StressCounter = playerData.StressCounter or 90
 	
     player:AddNullCostume(costumes.ID_SUNNY)
     player:AddNullCostume(costumes.ID_EMOTION)
 
-    OmoriMod.SetEmotion(player, "Neutral")
-    OmoriMod.AddEmotionGlow(player)
-
-    OmoriMod.GiveKnife(player, knifeType.VIOLIN_BOW)
-
+    mod.SetEmotion(player, "Neutral")
+    mod.AddEmotionGlow(player)
+    mod.GiveKnife(player, knifeType.VIOLIN_BOW)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.SunnyInit)
 
 ---@param player EntityPlayer
 ---@return boolean
-function mod:AreEnemiesNearby(player)
-    local nearEnemies = Isaac.FindInRadius(player.Position, enemyRadius, EntityPartition.ENEMY)
-    local Bool = false
-    for _, enemy in ipairs(nearEnemies) do
-        if enemy:IsActiveEnemy() and enemy:IsVulnerableEnemy() then
-            Bool = true
-        end
+local function AreEnemiesNearby(player)
+    for _, enemy in ipairs(Isaac.FindInRadius(player.Position, enemyRadius, EntityPartition.ENEMY)) do
+        if enemy:IsActiveEnemy() and enemy:IsVulnerableEnemy() then return true end
     end
-    return Bool
+    return false
 end
 
 ---@param player EntityPlayer
 function mod:SunnyStressingOut(player)
-    if not OmoriMod.IsOmori(player, true) then return end
-    
-    local emotion = funcs.GetEmotion(player)
-	local playerData = OmoriMod.GetData(player)    
-    local areNearEnemies = mod:AreEnemiesNearby(player)
+    if not mod.IsOmori(player, true) then return end
 
-    if areNearEnemies then
-        if emotion ~= "StressedOut" then
-            local counterToDecrease = emotion == "Afraid" and "StressCounter" or "AfraidCounter"
-            playerData[counterToDecrease] = math.max(playerData[counterToDecrease] - 1, 0)
-        end
+    local emotion = mod.GetEmotion(player)
+    local emotionData = emotions[emotion]
+    if not emotionData then return end
+
+    local playerData = mod.GetData(player)
+    local counter = emotionData.Counter
+    local dataColor = emotionData.Color
+    local dataCounter = playerData[counter]
+
+    if emotionData and AreEnemiesNearby(player) and emotion ~= "StressedOut" then
+        playerData[counter] = math.max(dataCounter - 1, 0)
     else
-        playerData.AfraidCounter = 90
-        playerData.StressCounter = 150
+        playerData.AfraidCounter = 60
+        playerData.StressCounter = 90
     end
-    
-    local emotions = {
-        ["Afraid"] = "AfraidCounter",
-        ["StressedOut"] = "StressCounter"
-    }
 
-    for emo, counter in pairs(emotions) do
-        local color = (emo == "Afraid" and misc.AfraidColor) or misc.StressColor
-        if playerData[counter] == 1 then
-            OmoriMod.SetEmotion(player, emo)
-            playerData[counter] = 0
-        end
+    if dataCounter == 1 then
+        mod.SetEmotion(player, emotionData.Emotion)
+        playerData[counter] = 0
+    end
 
-        if playerData[counter] <= 30 and playerData[counter] > 0 and playerData[counter] % 10 == 0 then
-            sfx:Play(SoundEffect.SOUND_BEEP)
-            player:SetColor(color, 8, -1, true, true)
-        end
-    end    
+    mod:TriggerPlayerFlash(player, dataCounter, dataColor, SoundEffect.SOUND_BEEP)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.SunnyStressingOut)
 
+---@param knife EntityEffect
+function mod:OnSunnyBowUpdate(knife)
+    local knifeData = mod:GetKnifeData(knife)
+    local player = mod:GetKnifeOwner(knife)
+
+    if not player then return end
+    if not knifeData then return end
+
+    knifeData.SwingSpeed = swingSpeed[mod.GetEmotion(player)]
+end
+mod:AddCallback(enums.Callbacks.POST_KNIFE_UPDATE, mod.OnSunnyBowUpdate)
+
 function mod:UpdateSunnyColorModifier(player)
-    if not OmoriMod.IsOmori(player, true) then return end  
+    if not mod.IsOmori(player, true) then return end  
 
-    local emotion = funcs.GetEmotion(player)
+    local emotion = mod.GetEmotion(player)
+    local colorMod = colorMods[emotion]
 
-    if emotion == "Neutral" then return end
+    if not colorMod then return end
 
-    local targetColorMod = emotion == "Afraid" and misc.AfraidColorMod or misc.StressColorMod    
-    game:SetColorModifier(targetColorMod, true, 0.3)
-
-    Isaac.CreateTimer(function ()
+    game:SetColorModifier(colorMod, true, 0.3)
+    Isaac.CreateTimer(function()
         game:GetRoom():UpdateColorModifier(true, true, 1000)
     end, 0, 1, false)
 end

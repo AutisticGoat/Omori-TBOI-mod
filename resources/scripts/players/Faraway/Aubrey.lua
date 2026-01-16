@@ -13,19 +13,19 @@ local knifeType = enums.KnifeType
 ---comment
 ---@param player EntityPlayer
 function mod:InitFarawayAubrey(player)
-    if not OmoriMod.IsAubrey(player, true) then return end
+    if not mod.IsAubrey(player, true) then return end
 
-    local playerData = OmoriMod.GetData(player)
+    local playerData = mod.GetData(player)
     
     player:AddNullCostume(costumes.ID_RW_AUBREY)
     player:AddNullCostume(costumes.ID_EMOTION)
 
-    playerData.HeadButtCooldown = OmoriMod:SecsToFrames(4)
-    playerData.EmotionCounter = OmoriMod:SecsToFrames(6)
+    playerData.HeadButtCooldown = mod:SecsToFrames(4)
+    playerData.EmotionCounter = mod:SecsToFrames(6)
     playerData.HeadButt = false
 
-    OmoriMod.SetEmotion(player, "Neutral")
-    OmoriMod.AddEmotionGlow(player)
+    mod.SetEmotion(player, "Neutral")
+    mod.AddEmotionGlow(player)
 
     mod.GiveKnife(player, knifeType.NAIL_BAT)
 end
@@ -34,11 +34,9 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_INIT, mod.InitFarawayAubrey)
 ---comment
 ---@param player EntityPlayer
 function mod:FarawayAubreyUpdate(player)
-    if not OmoriMod.IsAubrey(player, true) then return end
-
-    if player:CollidesWithGrid() then
-        OmoriMod:TriggerHBParams(player)
-    end
+    if not mod.IsAubrey(player, true) then return end
+    if not player:CollidesWithGrid() then return end
+    mod:TriggerHBParams(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.FarawayAubreyUpdate)
 
@@ -48,12 +46,10 @@ mod:AddCallback(ModCallbacks.MC_POST_PLAYER_UPDATE, mod.FarawayAubreyUpdate)
 function mod:AubreyBatCharge(knife)
     local player = knife.SpawnerEntity:ToPlayer()
     if not player then return end
-
-    if not OmoriMod.IsAubrey(player, true) then return end
+    if not mod.IsAubrey(player, true) then return end
 
     local batCharge = player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 1.5 or 2
-
-    return OmoriMod:SecsToKnifeCharge(batCharge)
+    return mod:SecsToKnifeCharge(batCharge)
 end
 mod:AddCallback(callbacks.PRE_KNIFE_CHARGE, mod.AubreyBatCharge)
 
@@ -74,12 +70,11 @@ end
 
 ---@param player EntityPlayer
 function mod:FarawayAubreyEffectUpdate(player)
+    if not OmoriMod.IsAubrey(player, true) then return end
+
     local emotion = OmoriMod.GetEmotion(player)
     local playerData = OmoriMod.GetData(player)
     local room = game:GetRoom()
-
-    if not OmoriMod.IsAubrey(player, true) then return end
-
     local emotionCounterMax = player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 5 or 6
 
     if (room:IsClear() or room:HasCurseMist() or thereAreEnemies() == false) then
@@ -128,15 +123,13 @@ function mod:FarawayAubreyEffectUpdate(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.FarawayAubreyEffectUpdate)
 
----comment
 ---@param player EntityPlayer
----@param ent EntityNPC
-function mod:FarawayAubreyHeadbuttHit(player, ent)
+function mod:FarawayAubreyHeadbuttHit(player)
     mod.SetEmotion(player, "Neutral")
 end
 mod:AddCallback(callbacks.HEADBUTT_ENEMY_HIT, mod.FarawayAubreyHeadbuttHit)
 
-function mod:NullFarawayHeadbuttDamage(entity, _, flags, source)
+function mod:NullFarawayHeadbuttDamage(entity)
     local player = entity:ToPlayer()    
 
     if not player then return end

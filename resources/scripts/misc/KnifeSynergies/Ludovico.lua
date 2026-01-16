@@ -5,14 +5,13 @@ local Callbacks = enums.Callbacks
 local function SpawnLudoTear(player)
     local playerData = OmoriMod.GetData(player)
 
-    if not playerData.LudoTear then
-        local tear = Isaac.Spawn(EntityType.ENTITY_TEAR, 0, 0, player.Position, Vector.Zero, player):ToTear() 
-        if not tear then return end
-        local tearData = OmoriMod.GetData(tear)
-        tearData.FakeLudo = true
-        tear:AddTearFlags(player.TearFlags | TearFlags.TEAR_BOUNCE)
-        playerData.LudoTear = tear
-    end
+    if playerData.LudoTear then return end
+    local tear = Isaac.Spawn(EntityType.ENTITY_TEAR, 0, 0, player.Position, Vector.Zero, player):ToTear() ---@cast tear EntityTear
+
+    local tearData = OmoriMod.GetData(tear)
+    tear:AddTearFlags(player.TearFlags | TearFlags.TEAR_BOUNCE)
+    tearData.FakeLudo = true
+    playerData.LudoTear = tear
 end
 
 function mod:ForceSpawnFakeLudoTear(player)
@@ -32,11 +31,9 @@ end
 ---@param tear EntityTear
 function mod:LudoTearUpdate(tear)
     local tearData = OmoriMod.GetData(tear)
-
-    if not tearData.FakeLudo then return end
-
     local player = OmoriMod.GetPlayerFromAttack(tear)
 
+    if not tearData.FakeLudo then return end
     if not player then return end
 
     tear.Height = -23
@@ -70,13 +67,21 @@ function mod:LudoTearUpdate(tear)
 end
 mod:AddCallback(ModCallbacks.MC_POST_TEAR_UPDATE, mod.LudoTearUpdate)
 
+---@param knife EntityEffect
+---@param entity Entity
 function mod:OnKnifeHittingLudoTear(knife, entity)
     local tear = entity:ToTear()
     if not tear then return end
     local tearData = OmoriMod.GetData(tear)
     if not tearData.FakeLudo then return end
+    if tearData.HitByKnife then return end
     tearData.HitByKnife = true
-    tear.Velocity = (knife.Position + tear.Position):Resized(100)
+
+    local player = mod.GetPlayerFromAttack(tear)
+
+    if not player then return end
+
+    mod.TriggerPush(tear, player, 50, 1, false)
 end
 mod:AddCallback(Callbacks.KNIFE_ENTITY_COLLISION, mod.OnKnifeHittingLudoTear)
 

@@ -9,10 +9,12 @@ function mod:SwordSwing(knife)
     if not player then return end
     if not player:HasCollectible(CollectibleType.COLLECTIBLE_SPIRIT_SWORD) then return end
 
-    local knifeData = OmoriMod.GetData(knife)
+    local knifeData = mod:GetKnifeData(knife)
+
+    if not knifeData then return end
     local playerData = OmoriMod.GetData(player)
 
-    knifeData.SwordSwing = knifeData.SwordSwing or false
+    knifeData.IsSwordSwing = knifeData.IsSwordSwing or false
 
     if not playerData.shinyKnifeCharge then return end
     if playerData.shinyKnifeCharge >= 10 then return end 
@@ -20,8 +22,7 @@ function mod:SwordSwing(knife)
     if not OmoriMod:IsShootTriggered(player) then return end
 
     OmoriMod:InitKnifeSwing(knife)
-    knifeData.AllowOriginalLogic = false
-    knifeData.SwordSwing = true
+    knifeData.IsSwordSwing = true
 end
 mod:AddCallback(Callbacks.POST_KNIFE_RENDER, mod.SwordSwing)
 

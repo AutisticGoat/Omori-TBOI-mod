@@ -114,15 +114,6 @@ function mod:AubreyButthead(player)
 end
 mod:AddCallback(ModCallbacks.MC_POST_PEFFECT_UPDATE, mod.AubreyButthead)
 
-
----@param player EntityPlayer
----@param collider Entity
----@return boolean?
-function mod:AubreyHittingButthead(player, collider)
-    
-end
-mod:AddCallback(ModCallbacks.MC_PRE_PLAYER_COLLISION, mod.AubreyHittingButthead)
-
 ---@param entity Entity
 ---@param source EntityRef
 ---@param flags DamageFlag
@@ -138,10 +129,8 @@ function mod:NullHeadbuttDamage(entity, _, flags, source)
     local emotionChangeTrigger = OmoriMod.randomNumber(1, 100, rng)
     local SpikeAcidFlags = DamageFlag.DAMAGE_ACID | DamageFlag.DAMAGE_SPIKES | DamageFlag.DAMAGE_CURSED_DOOR
 
-    if playerData.HeadButt then
-        if OmoriMod:isFlagInBitmask(flags, SpikeAcidFlags) then
-            return false
-        end 
+    if playerData.HeadButt and OmoriMod:isFlagInBitmask(flags, SpikeAcidFlags) then
+        return false
     end
 
     if source.Type == 0 then return end

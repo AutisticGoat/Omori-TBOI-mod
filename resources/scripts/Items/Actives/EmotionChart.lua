@@ -36,10 +36,10 @@ HudHelper.RegisterHUDElement({
 }, HudHelper.HUDType.ACTIVE_ID)
 
 ---comment
----@param player EntityPlayer
+-- -@param player EntityPlayer
 ---@return integer
 function mod:ChangeEmotionChartCharges(_, player)
-	return mod.IsOmori(player, false) and (player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 2 or 4) or 3
+	return mod.IsOmori(player, false) and (player:HasCollectible(CollectibleType.COLLECTIBLE_BIRTHRIGHT) and 120 or 240) or 180
 end
 mod:AddCallback(ModCallbacks.MC_PLAYER_GET_ACTIVE_MAX_CHARGE, mod.ChangeEmotionChartCharges, items.COLLECTIBLE_EMOTION_CHART)
 

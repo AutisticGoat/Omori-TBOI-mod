@@ -81,7 +81,6 @@
 		<sample weight="1" path="BA_angry_stage_2.wav" />
 	</sound>
 	
-	<!-- D -->
 	<sound name="deadseascrolls_pop">
         <sample weight="1" path="deadseascrolls/pop.wav" />
     </sound>

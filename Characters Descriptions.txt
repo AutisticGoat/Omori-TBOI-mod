@@ -113,6 +113,21 @@
 			- Aubrey will get Angry much faster
 			- Reduced Homerun charge time (2 > 1.5)
 			- Increased Headbutt damage mult: (3 > 4)
---- KEL (DW, expect him in 3.0) ---
+--- KEL (DW) ---
+	Stats: 
+		Speed: 1.20
+		Tears: 2.73
+		Damage: 2.625 (x0.75)
+		Range: 6.50
+		ShotSpeed: 1.00
+		Luck: 0.00
+
+	Description: Kel is fast, relies in a lot of his juice and has damage below average, fitting the role of a rogue, kel uses his always reliable ball to deal damage to his enemies:
+		- Comeback/Rally (pending definition): Kel relies on happiness to be powerful, so he needs a way to get that emotion oftenly:
+			- 
+		
+		- Run 'n gun: One of his signature skills, uses his ball and speed stat to deal great damage:
+			- 
+		
 
 ---

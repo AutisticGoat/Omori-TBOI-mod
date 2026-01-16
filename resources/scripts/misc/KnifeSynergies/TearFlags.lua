@@ -4,6 +4,8 @@ local Callbacks = enums.Callbacks
 
 function mod:TearFlagsHit(knife, entity)
     local player = OmoriMod:GetKnifeOwner(knife)
+    if not player then return end
+    
     local tearEffects = {
         [TearFlags.TEAR_SLOW] = function()
             local SlowColor = Color(0.5, 0.5, 0.5, 1)
@@ -28,7 +30,7 @@ function mod:TearFlagsHit(knife, entity)
             entity:AddShrink(EntityRef(player), 90)
         end,
         [TearFlags.TEAR_KNOCKBACK] = function()
-            WEAPON_KNOCKBACK_VELOCITY = WEAPON_KNOCKBACK_VELOCITY * 1.025
+            entity.Velocity = entity.Velocity * 1.025
         end,
         [TearFlags.TEAR_ICE] = function()
             entity:AddEntityFlags(EntityFlag.FLAG_ICE)
