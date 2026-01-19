@@ -59,7 +59,7 @@ local function OnEnemyInit(_, npc)
     if not mod.RandomBoolean(initRNG, 0.1) then return end
     local setEmotionRoll = initRNG:RandomInt(1, 3)
 
-    SEL:AddStatusEffect(npc, Emotions[setEmotionRoll], -1, EntityRef(npc))
+    -- SEL:AddStatusEffect(npc, Emotions[3], -1, EntityRef(npc))
 end
 mod:AddCallback(ModCallbacks.MC_POST_NPC_INIT, OnEnemyInit)
 

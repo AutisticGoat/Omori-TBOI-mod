@@ -1,5 +1,4 @@
 -- Omori Mod's (Totally Not Lifted) Code. (Thanks Sag)-
-
 -- Rework trabajado por Kotry / Rework made by Kotry 
 
 OmoriMod = RegisterMod("Omori TBOI Mod", 1)

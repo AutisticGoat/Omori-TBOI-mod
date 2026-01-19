@@ -111,6 +111,8 @@ HudHelper.RegisterHUDElement({
 ---@param player EntityPlayer
 function mod:KnifeSmoothRotation(player)
 	local knife = mod.GetKnife(player) ---@cast knife EntityEffect
+	if not knife then return end
+
 	local knifeData = mod:GetKnifeData(knife)
 	local headDir = player:GetHeadDirection()
 	local shouldRenderBelowPlayer = headDir == Direction.NO_DIRECTION or headDir == Direction.DOWN
@@ -120,8 +122,6 @@ function mod:KnifeSmoothRotation(player)
 	local isMoving = mod:IsPlayerMoving(player)
 
 	if not knifeData then return end
-
-	
 
 	knife.DepthOffset = shouldRenderBelowPlayer and 1 or -10
 
@@ -173,17 +173,15 @@ function mod:ShinyKnifeUpdate(knife)
 			end
 
 			local knifeChargeFormula = (OmoriMod.IsOmori(player, true) and (((0.05 + (OmoriMod.TearsPerSecond(player) / 50)) / 2.5)) * 100) or (((0.025 + (OmoriMod.TearsPerSecond(player) / 100)) / 2.5)) * 100
-			
+
 			local newCharge = funcs.runcallback(OmoriModCallbacks.PRE_KNIFE_CHARGE, knife, KnifeType) ---@type number
 
 			knifeChargeFormula = newCharge or knifeChargeFormula
 
 			playerData.shinyKnifeCharge = math.min(playerData.shinyKnifeCharge + knifeChargeFormula, 100)
-			
-			-- if playerData.shinyKnifeCharge >= 99 then playerData.shinyKnifeCharge = 100 end
 
 			playerData.Swings = numTears + baseSwings		
-			
+
 			if not isShooting and not knifesprite:IsPlaying("Swing") and playerData.shinyKnifeCharge > 0 then
 				playerData.shinyKnifeCharge = 0
 			end

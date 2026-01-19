@@ -21,11 +21,10 @@ local TableItems = {
 
 ---@param id CollectibleType
 ---@param player EntityPlayer
-function mod:OnEmotionGiverUse(id, _, player)
+mod:AddCallback(ModCallbacks.MC_USE_ITEM, function (_, id, _, player)
     local tableRef = mod.When(id, TableItems)
     if not tableRef then return end
-    
+
     mod.EmotionUpdateItem(player, TableItems, tableRef.Default, tableRef.Tier2, tableRef.Tier3)
     return true
-end
-mod:AddCallback(ModCallbacks.MC_USE_ITEM, mod.OnEmotionGiverUse)
+end)
