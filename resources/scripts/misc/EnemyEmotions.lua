@@ -322,10 +322,7 @@ local function OnPlayerGettingDamage(_, entity, amount, flags, source, cooldown)
         damageCooldown = damageCooldown * 1.5
     end
 
-    print(damageCooldown)
-
     player:ResetDamageCooldown()
     player:SetMinDamageCooldown(damageCooldown)
-
 end
 mod:AddCallback(ModCallbacks.MC_POST_ENTITY_TAKE_DMG, OnPlayerGettingDamage)
